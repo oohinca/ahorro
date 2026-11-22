@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#173f35">
+<meta name="description" content="Control de clientes y abonos quincenales de Ahorro Navideño Pits.">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<title>Ahorro Navideño Pits</title>
+<style>
+:root{--green:#173f35;--green2:#245b4c;--gold:#d9ad55;--cream:#f7f5ef;--ink:#202923;--muted:#68736d;--line:#e5e8e2;--white:#fff;--red:#b64040;--shadow:0 12px 35px #183d3014}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}.app{max-width:1080px;margin:auto;padding:18px 16px 90px}
+header{background:linear-gradient(125deg,var(--green),#286653);color:white;padding:22px;border-radius:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+header:after{content:"✦";position:absolute;font-size:130px;color:#ffffff10;right:25px;top:-35px}
+.brand{font-size:12px;letter-spacing:2px;color:#e9d5a6;font-weight:800}.headrow{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative;z-index:1}
+h1{font-size:clamp(25px,5vw,36px);margin:5px 0 3px;line-height:1.1}.subtitle{color:#dce9e2;margin:0}
+.status{font-size:12px;background:#ffffff1c;border:1px solid #ffffff35;padding:7px 10px;border-radius:30px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.stat,.panel{background:white;border:1px solid var(--line);border-radius:17px;padding:16px;box-shadow:var(--shadow)}
+.stat small{display:block;color:var(--muted);font-weight:650}.stat strong{display:block;font-size:clamp(19px,3.5vw,27px);margin-top:5px;color:var(--green);overflow-wrap:anywhere}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:16px 0}
+.btn{border:0;border-radius:11px;padding:11px 15px;font-weight:750;background:var(--green);color:white}.btn.secondary{background:#eaf0eb;color:var(--green)}.btn.gold{background:var(--gold);color:#342711}.btn.danger{background:#fff0ef;color:var(--red)}.btn.small{padding:7px 10px;font-size:13px}
+.search{flex:1;min-width:170px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:white}
+.layout{display:grid;grid-template-columns: minmax(260px,.85fr) minmax(0,1.5fr);gap:15px;align-items:start}
+h2{font-size:18px;margin:0 0 13px;color:var(--green)}.field{margin:11px 0}.field label{display:block;font-size:13px;font-weight:750;color:#536159;margin-bottom:5px}
+.field input,.field select{width:100%;padding:11px 12px;border:1px solid #dce2dc;border-radius:10px;background:#fff;color:var(--ink);min-height:43px}
+.hint{font-size:12px;color:var(--muted);margin-top:5px}.form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.clients{display:grid;gap:10px}.client{border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff;display:flex;gap:12px;align-items:center}
+.avatar{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:850;flex:none;font-size:17px}
+.clientmain{min-width:0;flex:1}.clientname{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{font-size:12px;color:var(--muted)}.amount{font-weight:850;color:var(--green);font-variant-numeric:tabular-nums}
+.clientactions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.empty{text-align:center;padding:30px 15px;color:var(--muted);border:1px dashed #cbd5cc;border-radius:14px}
+.history{margin-top:15px}.historyrow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.historyrow:last-child{border:0}
+.hidden{display:none!important}.modalback{position:fixed;inset:0;background:#10231dcc;display:grid;place-items:center;padding:16px;z-index:10}.modal{width:min(100%,460px);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:20px;box-shadow:0 25px 80px #0004}
+.modalhead{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#eef1ed;border-radius:9px;padding:7px 11px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin:22px 0}
+@media(max-width:720px){.layout{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:12px}.headrow{align-items:flex-start;flex-direction:column}.status{align-self:flex-start}.app{padding:12px 11px 70px}}
+@media(max-width:390px){.client{align-items:flex-start}.clientactions{flex-direction:column}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:span 2}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <div class="headrow"><div><div class="brand">CONTROL DE AHORRO · TEMPORADA NAVIDEÑA</div><h1>Ahorro Navideño Pits</h1><p class="subtitle">Cada aporte cuenta. Lleva tus ahorros al día.</p></div><div class="status" id="connection">● Comprobando conexión…</div></div>
+</header>
+<section class="stats">
+ <div class="stat"><small>Total ahorrado</small><strong id="grandTotal">$0</strong></div>
+ <div class="stat"><small>Clientes registrados</small><strong id="clientCount">0</strong></div>
+ <div class="stat"><small>Abonos registrados</small><strong id="depositCount">0</strong></div>
+</section>
+<div class="toolbar">
+ <input id="search" class="search" placeholder="Buscar cliente…" aria-label="Buscar cliente">
+ <button class="btn secondary" id="exportBtn">Exportar copia</button>
+ <button class="btn secondary" id="importBtn">Importar copia</button>
+ <input type="file" id="importFile" accept="application/json" class="hidden">
+</div>
+<div class="layout">
+ <section class="panel">
+  <h2 id="clientFormTitle">＋ Registrar cliente</h2>
+  <form id="clientForm">
+   <input type="hidden" id="clientId">
+   <div class="field"><label for="clientName">Nombre del cliente</label><input id="clientName" maxlength="70" required placeholder="Nombre completo"></div>
+   <div class="field"><label for="clientColor">Color identificador</label><select id="clientColor">
+    <option value="#2d7d68">Verde esmeralda</option><option value="#4776b8">Azul</option><option value="#9a68b5">Morado</option><option value="#d47b45">Naranja</option><option value="#c45d78">Rosa</option><option value="#9b873c">Dorado</option><option value="#478b9a">Turquesa</option><option value="#69758c">Gris azulado</option>
+   </select></div>
+   <div class="form-actions"><button class="btn" type="submit" id="saveClient">Guardar cliente</button><button class="btn secondary hidden" type="button" id="cancelEdit">Cancelar</button></div>
+  </form>
+  <p class="hint">Cada cliente tendrá su propio color y su historial de aportes.</p>
+ </section>
+ <section class="panel">
+  <h2>Clientes y ahorros</h2>
+  <div id="clients" class="clients"><div class="empty">Aún no hay clientes. Registra el primero.</div></div>
+ </section>
+</div>
+<footer>Los datos se guardan en este dispositivo. Exporta una copia de seguridad periódicamente.</footer>
+</div>
+<div id="depositModal" class="modalback hidden" role="dialog" aria-modal="true" aria-labelledby="depositTitle">
+ <div class="modal">
+  <div class="modalhead"><h2 id="depositTitle">Registrar abono</h2><button class="close" id="closeModal" aria-label="Cerrar">✕</button></div>
+  <form id="depositForm">
+   <input type="hidden" id="depositClientId">
+   <div class="field"><label>Cliente</label><input id="depositClientName" disabled></div>
+   <div class="field"><label for="depositAmount">Valor del abono (COP)</label><input id="depositAmount" type="number" min="1" step="1" required placeholder="Ej. 50000"></div>
+   <div class="field"><label for="depositNumber">Número del abono</label><input id="depositNumber" type="number" min="1" step="1" required></div>
+   <div class="field"><label for="depositDate">Fecha del abono</label><input id="depositDate" type="date" required></div>
+   <div class="form-actions"><button class="btn" type="submit">Guardar abono</button><button class="btn secondary" type="button" id="cancelDeposit">Cancelar</button></div>
+  </form>
+ </div>
+</div>
+<script>
+const DB_NAME='AhorroNavidenoPitsDB', DB_VERSION=1;
+let db;
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n)||0);
+const today=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+function openDB(){return new Promise((resolve,reject)=>{
+ const req=indexedDB.open(DB_NAME,DB_VERSION);
+ req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('clients'))d.createObjectStore('clients',{keyPath:'id'});if(!d.objectStoreNames.contains('deposits')){const s=d.createObjectStore('deposits',{keyPath:'id'});s.createIndex('clientId','clientId',{unique:false});}};
+ req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+});}
+function all(store){return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+function put(store,value){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(value);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
+function del(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).delete(id);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
+let clients=[],deposits=[];
+async function refresh(){
+ [clients,deposits]=await Promise.all([all('clients'),all('deposits')]);
+ clients.sort((a,b)=>a.name.localeCompare(b.name,'es'));
+ render();
+}
+function render(){
+ $('grandTotal').textContent=money(deposits.reduce((s,d)=>s+Number(d.amount),0));
+ $('clientCount').textContent=clients.length;
+ $('depositCount').textContent=deposits.length;
+ const q=$('search').value.trim().toLocaleLowerCase('es');
+ const shown=clients.filter(c=>c.name.toLocaleLowerCase('es').includes(q));
+ $('clients').innerHTML='';
+ if(!shown.length){$('clients').innerHTML='<div class="empty">'+(clients.length?'No hay coincidencias.':'Aún no hay clientes. Registra el primero.')+'</div>';return;}
+ shown.forEach(c=>{
+  const ds=deposits.filter(d=>d.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||b.number-a.number);
+  const total=ds.reduce((s,d)=>s+Number(d.amount),0);
+  const el=document.createElement('article');el.className='client';
+  const avatar=document.createElement('div');avatar.className='avatar';avatar.style.background=c.color;avatar.textContent=c.name.trim().charAt(0).toUpperCase();
+  const main=document.createElement('div');main.className='clientmain';
+  const name=document.createElement('div');name.className='clientname';name.textContent=c.name;
+  const meta=document.createElement('div');meta.className='meta';meta.textContent=ds.length+' abono(s) · Último: '+(ds[0]?ds[0].date:'Sin abonos');
+  const amount=document.createElement('div');amount.className='amount';amount.textContent=money(total);
+  main.append(name,meta,amount);
+  const actions=document.createElement('div');actions.className='clientactions';
+  const add=button('＋ Abono','btn small gold',()=>openDeposit(c));
+  const history=button('Historial','btn small secondary',()=>showHistory(c));
+  const edit=button('Editar','btn small secondary',()=>editClient(c));
+  const remove=button('Eliminar','btn small danger',()=>deleteClient(c));
+  actions.append(add,history,edit,remove);el.append(avatar,main,actions);$('clients').append(el);
+ });
+}
+function button(label,cls,fn){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=label;b.addEventListener('click',fn);return b;}
+$('clientForm').addEventListener('submit',async e=>{
+ e.preventDefault();const id=$('clientId').value||crypto.randomUUID();
+ const name=$('clientName').value.trim();if(!name)return;
+ const existing=clients.find(c=>c.name.toLocaleLowerCase('es')===name.toLocaleLowerCase('es')&&c.id!==id);
+ if(existing){alert('Ya existe un cliente con ese nombre.');return;}
+ await put('clients',{id,name,color:$('clientColor').value,createdAt:clients.find(c=>c.id===id)?.createdAt||new Date().toISOString()});
+ resetClientForm();await refresh();
+});
+function resetClientForm(){$('clientForm').reset();$('clientId').value='';$('clientFormTitle').textContent='＋ Registrar cliente';$('saveClient').textContent='Guardar cliente';$('cancelEdit').classList.add('hidden');}
+function editClient(c){$('clientId').value=c.id;$('clientName').value=c.name;$('clientColor').value=c.color;$('clientFormTitle').textContent='Editar cliente';$('saveClient').textContent='Guardar cambios';$('cancelEdit').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+$('cancelEdit').onclick=resetClientForm;
+async function deleteClient(c){const count=deposits.filter(d=>d.clientId===c.id).length;if(!confirm('¿Eliminar a '+c.name+' y sus '+count+' abono(s)? Esta acción no se puede deshacer.'))return;for(const d of deposits.filter(x=>x.clientId===c.id))await del('deposits',d.id);await del('clients',c.id);await refresh();}
+function openDeposit(c){$('depositClientId').value=c.id;$('depositClientName').value=c.name;$('depositAmount').value='';$('depositDate').value=today();const nums=deposits.filter(d=>d.clientId===c.id).map(d=>Number(d.number));$('depositNumber').value=nums.length?Math.max(...nums)+1:1;$('depositModal').classList.remove('hidden');$('depositAmount').focus();}
+function closeDeposit(){$('depositModal').classList.add('hidden');}
+$('closeModal').onclick=$('cancelDeposit').onclick=closeDeposit;
+$('depositModal').addEventListener('click',e=>{if(e.target===$('depositModal'))closeDeposit();});
+$('depositForm').addEventListener('submit',async e=>{
+ e.preventDefault();const clientId=$('depositClientId').value,amount=Number($('depositAmount').value),number=Number($('depositNumber').value),date=$('depositDate').value;
+ if(!Number.isSafeInteger(amount)||amount<1||!Number.isInteger(number)||number<1||!date){alert('Verifica el valor, número y fecha del abono.');return;}
+ if(deposits.some(d=>d.clientId===clientId&&Number(d.number)===number)){alert('Ese número de abono ya existe para este cliente.');return;}
+ await put('deposits',{id:crypto.randomUUID(),clientId,amount,number,date,createdAt:new Date().toISOString()});closeDeposit();await refresh();
+});
+function showHistory(c){
+ const ds=deposits.filter(d=>d.clientId===c.id).sort((a,b)=>b.date.localeCompare(a.date)||b.number-a.number);
+ const total=ds.reduce((s,d)=>s+Number(d.amount),0);
+ const lines=ds.map(d=>'Abono #'+d.number+' · '+d.date+' · '+money(d.amount)).join('\\n');
+ const choice=prompt(c.name+'\\nTotal: '+money(total)+'\\n\\n'+(lines||'Sin abonos')+'\\n\\nPara borrar un abono, escribe su número exacto. Deja vacío para cerrar.');
+ if(choice===null||choice.trim()==='')return;
+ const d=ds.find(x=>String(x.number)===choice.trim());
+ if(!d){alert('No encontré ese número de abono.');return;}
+ if(confirm('¿Eliminar el abono #'+d.number+' por '+money(d.amount)+'?'))del('deposits',d.id).then(refresh);
+}
+$('search').addEventListener('input',render);
+$('exportBtn').onclick=async()=>{
+ const data={app:'Ahorro Navideño Pits',version:1,exportedAt:new Date().toISOString(),clients:await all('clients'),deposits:await all('deposits')};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='respaldo-ahorro-navideno-pits-'+today()+'.json';a.click();URL.revokeObjectURL(url);
+};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').addEventListener('change',async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{const data=JSON.parse(await file.text());if(!Array.isArray(data.clients)||!Array.isArray(data.deposits))throw Error('Formato incorrecto');if(!confirm('La importación combinará estos registros con los que ya tienes. ¿Continuar?'))return;for(const c of data.clients)if(c.id&&c.name)await put('clients',c);for(const d of data.deposits)if(d.id&&d.clientId)await put('deposits',d);await refresh();alert('Copia importada correctamente.');}catch(err){alert('No se pudo importar: '+err.message);}finally{e.target.value='';}
+});
+function connection(){ $('connection').textContent=navigator.onLine?'● En línea':'● Modo sin conexión';$('connection').style.color=navigator.onLine?'#fff':'#ffe3a2';}
+window.addEventListener('online',connection);window.addEventListener('offline',connection);
+(async()=>{try{if(!('indexedDB'in window))throw Error('Este navegador no permite guardar datos locales.');db=await openDB();await refresh();connection();}catch(e){alert('No se pudo iniciar la base de datos local: '+e.message);}})();
+if('serviceWorker'in navigator&&location.protocol!=='file:'){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(e=>console.error('Service Worker:',e)));}
+</script>
+</body></html>
