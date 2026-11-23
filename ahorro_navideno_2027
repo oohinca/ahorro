@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f4d34">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ahorro 2027">
+<title>Ahorro Navideño 2027</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--pine:#0f4d34;--pine2:#16694a;--red:#c8202f;--gold:#f2b632;--bg:#f3f6f2;--card:#fff;--ink:#17261f;--mut:#6b7c73;--line:#dfe8e2}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1511;--card:#16211b;--ink:#eaf2ed;--mut:#92a69b;--line:#26352d}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);overscroll-behavior:none;-webkit-user-select:none;user-select:none;overflow:hidden}
+input,button{font:inherit;color:inherit}
+input{-webkit-user-select:text;user-select:text}
+#app{height:100%;display:flex;flex-direction:column}
+header{background:var(--pine);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 14px) 20px 18px;border-radius:0 0 26px 26px;box-shadow:0 6px 18px rgba(0,0,0,.18);position:relative;z-index:2}
+header h1{margin:0 0 12px;font-size:20px;font-weight:700;letter-spacing:.2px}
+.tot{display:flex;justify-content:space-between;align-items:flex-end}
+.tot small{opacity:.8;font-size:13px}
+.tot b{display:block;font-size:34px;line-height:1.1;margin-top:2px}
+.tot span{font-size:13px;text-align:right;opacity:.9;line-height:1.5}
+main{flex:1;overflow-y:auto;padding:16px 16px 120px;-webkit-overflow-scrolling:touch}
+.search{width:100%;padding:13px 16px;border-radius:14px;border:1px solid var(--line);background:var(--card);margin-bottom:14px;outline:none}
+.row{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid var(--line);border-left-width:6px;cursor:pointer}
+.row:active{transform:scale(.985)}
+.av{width:46px;height:46px;border-radius:50%;color:#fff;font-weight:700;font-size:19px;display:grid;place-items:center;flex:none}
+.row .i{flex:1;min-width:0}
+.row .i b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .i small{color:var(--mut)}
+.row .v{font-weight:700;font-size:17px}
+.empty{text-align:center;color:var(--mut);padding:50px 20px;line-height:1.6}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:8px 0 calc(env(safe-area-inset-bottom,0px) + 8px);z-index:3}
+nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mut);width:90px;padding:4px}
+nav button .ic{font-size:22px}
+nav button.on{color:var(--red);font-weight:700}
+#fab{width:60px;height:60px;border-radius:50%;background:var(--gold);color:#3b2a00;border:0;font-size:34px;line-height:1;margin-top:-34px;box-shadow:0 6px 16px rgba(0,0,0,.28);padding:0;width:60px}
+#fab:active{transform:scale(.93)}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:var(--card);border-radius:24px 24px 0 0;padding:18px 20px calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateY(105%);transition:transform .25s;z-index:6}
+.sheet.open{transform:none}
+.sheet h2{margin:0 0 14px;font-size:19px}
+label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px}
+.f{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);outline:none;font-size:16px}
+.f:focus{border-color:var(--pine2)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;border:0;border-radius:14px;padding:15px;font-weight:700;font-size:16px;margin-top:18px;background:var(--red);color:#fff}
+.btn.alt{background:var(--pine);margin-top:12px}
+.btn.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.ab{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.ab .n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;flex:none}
+.ab .i{flex:1}.ab small{color:var(--mut)}
+.ab .x{background:none;border:0;color:var(--red);font-size:20px;padding:6px}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:11px 18px;border-radius:24px;font-size:14px;opacity:0;transition:.25s;z-index:9;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;line-height:1.5}
+.card p{margin:0 0 4px;color:var(--mut);font-size:14px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>🎄 Ahorro Navideño 2027</h1>
+    <div class="tot"><div><small>Total ahorrado</small><b id="total">$ 0</b></div><span id="meta"></span></div>
+  </header>
+  <main>
+    <section id="v-clientes">
+      <input class="search" id="q" placeholder="Buscar cliente…" autocomplete="off">
+      <div id="list"></div>
+    </section>
+    <section id="v-datos" hidden>
+      <div class="card"><b>Excel</b><p>Descarga una tabla con todos los abonos y un resumen por cliente.</p><button class="btn alt" id="bx">Exportar a Excel</button></div>
+      <div class="card"><b>Base de datos SQLite</b><p>Guarda o restaura una copia completa (.sqlite).</p><button class="btn alt" id="bs">Guardar copia</button><button class="btn ghost" id="br">Restaurar copia</button><input type="file" id="fr" accept=".sqlite,.db" hidden></div>
+      <div class="card"><p>Cada abono se guarda en la base de datos del teléfono apenas lo registras.</p></div>
+    </section>
+  </main>
+  <nav>
+    <button id="t1" class="on"><span class="ic">👥</span>Clientes</button>
+    <button id="fab" aria-label="Nuevo abono">+</button>
+    <button id="t2"><span class="ic">💾</span>Datos</button>
+  </nav>
+</div>
+
+<div class="sheet-bg" id="bg"></div>
+<div class="sheet" id="s-add">
+  <h2 id="ttl">Nuevo abono</h2>
+  <label>Nombre</label>
+  <input class="f" id="nm" list="names" placeholder="Nombre del cliente" autocomplete="off">
+  <datalist id="names"></datalist>
+  <div class="two">
+    <div><label>Valor abonado</label><input class="f" id="vl" type="number" inputmode="numeric" placeholder="50000"></div>
+    <div><label>N.º de abono</label><input class="f" id="cs" type="number" inputmode="numeric" value="1"></div>
+  </div>
+  <label>Fecha del abono</label>
+  <input class="f" id="fc" type="date">
+  <button class="btn" id="sv">Guardar abono</button>
+</div>
+<div class="sheet" id="s-det"></div>
+<div class="sheet" id="s-ren"><h2>Editar nombre</h2><label>Nombre</label><input class="f" id="rnm" autocomplete="off"><button class="btn" id="rsv">Guardar nombre</button></div>
+<div id="toast"></div>
+
+<script>
+const COLORS=['#e53935','#1e88e5','#2e9e4f','#fb8c00','#8e24aa','#00acc1','#d81b60','#6d4c41','#3949ab','#7cb342','#f4511e','#00897b'];
+const $=s=>document.querySelector(s);
+const fmt=n=>'$ '+Number(n).toLocaleString('es-CO');
+const hoy=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const fdate=s=>{const [y,m,d]=s.split('-');return new Date(y,m-1,d).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'})};
+const KEY='ahorro2027_db';
+let db,SQL;
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+function q(sql,p=[]){const st=db.prepare(sql);st.bind(p);const r=[];while(st.step())r.push(st.getAsObject());st.free();return r}
+function persist(){
+  try{const d=db.export();let s='';for(let i=0;i<d.length;i+=8192)s+=String.fromCharCode.apply(null,d.subarray(i,i+8192));localStorage.setItem(KEY,btoa(s))}
+  catch(e){toast('No se pudo guardar. Haz una copia en Datos.')}
+}
+function loadDb(){
+  try{const s=localStorage.getItem(KEY);if(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new SQL.Database(u)}}catch(e){}
+  return new SQL.Database();
+}
+function schema(){
+  db.run(`CREATE TABLE IF NOT EXISTS clientes(id INTEGER PRIMARY KEY AUTOINCREMENT,nombre TEXT UNIQUE NOT NULL,color TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS abonos(id INTEGER PRIMARY KEY AUTOINCREMENT,cliente_id INTEGER NOT NULL,consecutivo INTEGER NOT NULL,valor REAL NOT NULL,fecha TEXT NOT NULL,FOREIGN KEY(cliente_id) REFERENCES clientes(id));`);
+}
+
+function render(){
+  const t=q('SELECT COALESCE(SUM(valor),0) t,COUNT(*) n FROM abonos')[0];
+  const nc=q('SELECT COUNT(*) n FROM clientes')[0].n;
+  $('#total').textContent=fmt(t.t);
+  $('#meta').innerHTML=nc+(nc==1?' cliente':' clientes')+'<br>'+t.n+(t.n==1?' abono':' abonos');
+  const f=$('#q').value.trim().toLowerCase();
+  const rows=q(`SELECT c.id,c.nombre,c.color,COUNT(a.id) n,COALESCE(SUM(a.valor),0) total,MAX(a.fecha) ult FROM clientes c LEFT JOIN abonos a ON a.cliente_id=c.id GROUP BY c.id ORDER BY c.nombre COLLATE NOCASE`).filter(r=>r.nombre.toLowerCase().includes(f));
+  $('#list').innerHTML=rows.length?rows.map(r=>`<div class="row" style="border-left-color:${r.color}" data-id="${r.id}"><div class="av" style="background:${r.color}">${esc(r.nombre[0].toUpperCase())}</div><div class="i"><b>${esc(r.nombre)}</b><small>${r.n} ${r.n==1?'abono':'abonos'}${r.ult?' · último '+fdate(r.ult):''}</small></div><div class="v">${fmt(r.total)}</div></div>`).join(''):`<div class="empty">${f?'No hay clientes con ese nombre.':'Aún no hay abonos.<br>Toca + para registrar el primero.'}</div>`;
+  $('#names').innerHTML=q('SELECT nombre FROM clientes ORDER BY nombre').map(r=>`<option value="${esc(r.nombre)}">`).join('');
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function openSheet(id){$('#bg').classList.add('open');$(id).classList.add('open')}
+function closeSheets(){$('#bg').classList.remove('open');document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'))}
+$('#bg').onclick=closeSheets;
+
+let editId=null,renId=null;
+function openAdd(name=''){
+  editId=null;$('#ttl').textContent='Nuevo abono';$('#sv').textContent='Guardar abono';
+  $('#nm').value=name;$('#vl').value='';$('#fc').value=hoy();nextNum();openSheet('#s-add');
+}
+function openEdit(aid){
+  const a=q('SELECT a.*,c.nombre FROM abonos a JOIN clientes c ON c.id=a.cliente_id WHERE a.id=?',[aid])[0];if(!a)return;
+  editId=aid;$('#ttl').textContent='Editar abono';$('#sv').textContent='Guardar cambios';
+  $('#nm').value=a.nombre;$('#vl').value=a.valor;$('#cs').value=a.consecutivo;$('#fc').value=a.fecha;openSheet('#s-add');
+}
+function nextNum(){
+  if(editId)return;
+  const n=$('#nm').value.trim();
+  const r=n?q('SELECT COALESCE(MAX(a.consecutivo),0)+1 s FROM abonos a JOIN clientes c ON c.id=a.cliente_id WHERE c.nombre=? COLLATE NOCASE',[n])[0].s:1;
+  $('#cs').value=r;
+}
+$('#nm').oninput=nextNum;$('#nm').onchange=nextNum;
+$('#fab').onclick=()=>openAdd();
+
+$('#sv').onclick=()=>{
+  const n=$('#nm').value.trim(),v=parseFloat($('#vl').value),c=parseInt($('#cs').value),f=$('#fc').value;
+  if(!n)return toast('Escribe el nombre');
+  if(!(v>0))return toast('Escribe el valor abonado');
+  if(!(c>0))return toast('Escribe el número de abono');
+  if(!f)return toast('Elige la fecha');
+  let cl=q('SELECT id FROM clientes WHERE nombre=? COLLATE NOCASE',[n])[0];
+  if(!cl){const k=q('SELECT COUNT(*) n FROM clientes')[0].n;db.run('INSERT INTO clientes(nombre,color) VALUES(?,?)',[n,COLORS[k%COLORS.length]]);cl=q('SELECT id FROM clientes WHERE nombre=?',[n])[0]}
+  if(editId){
+    db.run('UPDATE abonos SET cliente_id=?,consecutivo=?,valor=?,fecha=? WHERE id=?',[cl.id,c,v,f,editId]);
+    db.run('DELETE FROM clientes WHERE id NOT IN (SELECT cliente_id FROM abonos)');
+    editId=null;persist();render();closeSheets();toast('Cambios guardados');setTimeout(()=>openDet(cl.id),220);return;
+  }
+  db.run('INSERT INTO abonos(cliente_id,consecutivo,valor,fecha) VALUES(?,?,?,?)',[cl.id,c,v,f]);
+  persist();render();closeSheets();toast('Abono guardado');
+};
+
+function openDet(id){
+  const c=q('SELECT * FROM clientes WHERE id=?',[id])[0];if(!c)return;
+  const ab=q('SELECT * FROM abonos WHERE cliente_id=? ORDER BY consecutivo DESC,fecha DESC',[id]);
+  const tot=ab.reduce((s,a)=>s+a.valor,0);
+  $('#s-det').innerHTML=`<h2 style="color:${c.color};display:flex;align-items:center;gap:8px">${esc(c.nombre)}<button class="x" data-ren="${id}" aria-label="Editar nombre" style="color:var(--mut);font-size:17px">✏️</button></h2><div style="font-size:26px;font-weight:800;margin-bottom:6px">${fmt(tot)}</div><small style="color:var(--mut)">${ab.length} ${ab.length==1?'abono':'abonos'}</small>
+  <div style="margin-top:8px">${ab.map(a=>`<div class="ab"><div class="n" style="background:${c.color}">${a.consecutivo}</div><div class="i"><b>${fmt(a.valor)}</b><br><small>${fdate(a.fecha)}</small></div><button class="x" data-edit="${a.id}" aria-label="Editar" style="color:var(--mut);font-size:18px">✏️</button><button class="x" data-del="${a.id}" data-c="${id}" aria-label="Eliminar">🗑</button></div>`).join('')}</div>
+  <button class="btn" data-add="${esc(c.nombre)}">Nuevo abono</button><button class="btn ghost" id="cl">Cerrar</button>`;
+  openSheet('#s-det');
+}
+$('#list').onclick=e=>{const r=e.target.closest('.row');if(r)openDet(r.dataset.id)};
+$('#s-det').onclick=e=>{
+  const d=e.target.closest('[data-del]');
+  if(d){if(confirm('¿Eliminar este abono?')){db.run('DELETE FROM abonos WHERE id=?',[d.dataset.del]);persist();render();openDet(d.dataset.c);toast('Abono eliminado')}return}
+  const ed=e.target.closest('[data-edit]');if(ed){closeSheets();setTimeout(()=>openEdit(ed.dataset.edit),200);return}
+  const rn=e.target.closest('[data-ren]');if(rn){closeSheets();setTimeout(()=>{renId=rn.dataset.ren;$('#rnm').value=q('SELECT nombre FROM clientes WHERE id=?',[renId])[0].nombre;openSheet('#s-ren')},200);return}
+  const a=e.target.closest('[data-add]');if(a){closeSheets();setTimeout(()=>openAdd(a.dataset.add),150)}
+  if(e.target.id=='cl')closeSheets();
+};
+$('#q').oninput=render;
+$('#rsv').onclick=()=>{
+  const n=$('#rnm').value.trim();if(!n)return toast('Escribe el nombre');
+  if(q('SELECT id FROM clientes WHERE nombre=? COLLATE NOCASE AND id<>?',[n,renId]).length)return toast('Ya existe un cliente con ese nombre');
+  db.run('UPDATE clientes SET nombre=? WHERE id=?',[n,renId]);persist();render();closeSheets();toast('Nombre actualizado');setTimeout(()=>openDet(renId),220);
+};
+
+function tab(n){$('#v-clientes').hidden=n!=1;$('#v-datos').hidden=n!=2;$('#t1').classList.toggle('on',n==1);$('#t2').classList.toggle('on',n==2)}
+$('#t1').onclick=()=>tab(1);$('#t2').onclick=()=>tab(2);
+
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+$('#bx').onclick=()=>{
+  if(typeof XLSX=='undefined')return toast('Se necesita internet para exportar');
+  const det=q('SELECT c.nombre Nombre,a.consecutivo "N.º abono",a.valor Valor,a.fecha Fecha FROM abonos a JOIN clientes c ON c.id=a.cliente_id ORDER BY c.nombre COLLATE NOCASE,a.consecutivo');
+  const res=q('SELECT c.nombre Nombre,COUNT(a.id) Abonos,COALESCE(SUM(a.valor),0) Total FROM clientes c LEFT JOIN abonos a ON a.cliente_id=c.id GROUP BY c.id ORDER BY c.nombre COLLATE NOCASE');
+  res.push({Nombre:'TOTAL GENERAL',Abonos:res.reduce((s,r)=>s+r.Abonos,0),Total:res.reduce((s,r)=>s+r.Total,0)});
+  const wb=XLSX.utils.book_new(),w1=XLSX.utils.json_to_sheet(det),w2=XLSX.utils.json_to_sheet(res);
+  w1['!cols']=[{wch:24},{wch:10},{wch:14},{wch:12}];w2['!cols']=[{wch:24},{wch:10},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,w1,'Abonos');XLSX.utils.book_append_sheet(wb,w2,'Resumen');
+  XLSX.writeFile(wb,'Ahorro_Navideno_2027.xlsx');toast('Excel descargado');
+};
+$('#bs').onclick=()=>{download(new Blob([db.export()],{type:'application/x-sqlite3'}),'ahorro_navideno_2027.sqlite');toast('Copia descargada')};
+$('#br').onclick=()=>$('#fr').click();
+$('#fr').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const nd=new SQL.Database(new Uint8Array(await f.arrayBuffer()));nd.exec('SELECT 1 FROM clientes LIMIT 1;SELECT 1 FROM abonos LIMIT 1');
+    if(!confirm('Esto reemplaza los datos actuales. ¿Continuar?'))return;
+    db=nd;persist();render();toast('Copia restaurada')}catch(err){toast('Archivo no válido')}
+  e.target.value='';
+};
+
+// Manifest para instalar como app
+try{const m={name:'Ahorro Navideño 2027',short_name:'Ahorro 2027',display:'standalone',background_color:'#0f4d34',theme_color:'#0f4d34',start_url:'.',
+  icons:[{src:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="#0f4d34"/><text x="96" y="130" font-size="110" text-anchor="middle">🎄</text></svg>'),sizes:'192x192',type:'image/svg+xml',purpose:'any'}]};
+  const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));document.head.appendChild(l)}catch(e){}
+
+if(typeof initSqlJs=='undefined'){$('#list').innerHTML='<div class="empty">Conéctate a internet una vez para cargar la base de datos y vuelve a abrir la app.</div>'}
+else initSqlJs({locateFile:f=>'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/'+f}).then(S=>{SQL=S;db=loadDb();schema();render()})
+ .catch(()=>{$('#list').innerHTML='<div class="empty">No se pudo cargar la base de datos. Revisa tu conexión e intenta de nuevo.</div>'});
+</script>
+</body>
+</html>
